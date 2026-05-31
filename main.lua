@@ -51,8 +51,8 @@ function _update(dt)
     }
 
     State.input_vector = util.vec_normalize(State.input_vector)
-    State.x += State.input_vector.x * SPEED * dt
-    State.y += State.input_vector.y * SPEED * dt
+    State.x = (State.x + State.input_vector.x * SPEED * dt) % usagi.GAME_W
+    State.y = (State.y + State.input_vector.y * SPEED * dt) % usagi.GAME_H
   end
 
   -- game logic
@@ -75,6 +75,16 @@ function _draw(dt)
 
 
   -- health bar
+  local color = gfx.COLOR_GREEN
+  if State.health < 25 then
+    color = gfx.COLOR_RED
+  else
+    if State.health < 50 then
+      color = gfx.COLOR_YELLOW
+    end
+  end
+
+
   gfx.rect_ex(
     usagi.GAME_W - HEALTH_BAR.x - HEALTH_BAR.padding - HEALTH_BAR.thickness,
     usagi.GAME_H - HEALTH_BAR.y - HEALTH_BAR.padding - HEALTH_BAR.thickness,
@@ -88,7 +98,7 @@ function _draw(dt)
     usagi.GAME_H - HEALTH_BAR.y - HEALTH_BAR.padding,
     State.health,
     HEALTH_BAR.y,
-    gfx.COLOR_RED)
+    color)
 
   if State.health <= 0 then
     local text = 'GAME OVER'
@@ -104,8 +114,8 @@ function _draw(dt)
   end
 
   -- debug stuff
-  if usagi.IS_DEV then
-    gfx.text(
-      State.input_vector.x .. ", " .. State.input_vector.y, 10, 10, gfx.COLOR_GREEN)
-  end
+  -- if usagi.IS_DEV then
+  --   gfx.text(
+  --     State.input_vector.x .. ", " .. State.input_vector.y, 10, 10, gfx.COLOR_GREEN)
+  -- end
 end
