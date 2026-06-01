@@ -11,12 +11,14 @@ function _init()
       x = 0,
       y = 0
     },
-    x = 10,
-    y = 10,
+    location = {
+      x = usagi.GAME_W / 2,
+      y = usagi.GAME_H / 2,
+    },
     direction = 0, -- angle in radians
     health = 100,
     stopped = false,
-    -- {sprite_idx, x, y, scale, rotation, speed, direction, spin}
+    -- {sprite_idx, location, scale, rotation, speed, direction, spin}
     astroids = {}
   }
 end
@@ -46,6 +48,8 @@ SPRITES = {
   astroid3 = 4,
 }
 ASTROID_INTERVAL = 5000
+HITSTOP_INTERVAL = .2
+DAMAGE = 5
 -- }}}
 
 -- helper functions {{{
@@ -94,7 +98,7 @@ local function spawn_astroid()
   })
 
   local sprite_idx = math.random(SPRITES.astroid1, SPRITES.astroid3)
-  local scale = math.random(3)
+  local scale = math.random(2)
   local rotation = math.random() * 2 * math.pi
   local speed = math.random(30, 70)
   local spin = math.random(2) % 2 == 0 and 1 or -1
@@ -106,7 +110,7 @@ local function spawn_astroid()
     rotation = rotation,
     speed = speed,
     direction = direction,
-    spin = spin
+    spin = spin,
   })
 end
 -- }}}
@@ -122,8 +126,8 @@ function _update(dt)
     }
 
     State.input_vector = util.vec_normalize(State.input_vector)
-    State.x = (State.x + State.input_vector.x * SPEED * dt) % usagi.GAME_W
-    State.y = (State.y + State.input_vector.y * SPEED * dt) % usagi.GAME_H
+    State.location.x = (State.location.x + State.input_vector.x * SPEED * dt) % usagi.GAME_W
+    State.location.y = (State.location.y + State.input_vector.y * SPEED * dt) % usagi.GAME_H
 
     -- TODO: lerp vector for smooth rotation (maybe)
     if vec_magnitude(State.input_vector) ~= 0 then
@@ -138,13 +142,39 @@ function _update(dt)
     effect.screen_shake(2, 2)
   end
 
-  for _, value in ipairs(State.astroids) do
+  local destroy_list = {}
+
+  for idx, value in ipairs(State.astroids) do
     value.location = {
       x = value.location.x + (value.direction.x * value.speed * dt),
       y = value.location.y + (value.direction.y * value.speed * dt)
     }
 
     value.rotation += dt * math.random(5) * value.spin
+
+    if util.rect_overlap(
+          {
+            x = State.location.x,
+            y = State.location.y,
+            w = usagi.SPRITE_SIZE,
+            h = usagi.SPRITE_SIZE,
+          },
+          {
+            x = value.location.x,
+            y = value.location.y,
+            w = usagi.SPRITE_SIZE * value.scale,
+            h = usagi.SPRITE_SIZE * value.scale,
+          })
+    then
+      effect.hitstop(HITSTOP_INTERVAL)
+      effect.flash(HITSTOP_INTERVAL, gfx.COLOR_RED)
+      State.health -= DAMAGE * value.scale
+      table.insert(destroy_list, idx)
+    end
+  end
+
+  for _, value in ipairs(destroy_list) do
+    table.remove(State.astroids, value)
   end
   -- }}}
 
@@ -166,7 +196,7 @@ function _draw(dt)
   -- player {{{
   gfx.spr_ex(
     SPRITES.player,
-    State.x, State.y,
+    State.location.x, State.location.y,
     false, false,
     State.direction,
     gfx.COLOR_WHITE, 1
