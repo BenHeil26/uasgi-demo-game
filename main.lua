@@ -1,5 +1,5 @@
 function _config()
-  return { name = "Demo Game", game_id = "com.usagiengine.demo-game" }
+  return { name = "Astroids", game_id = "com.usagiengine.astroids" }
 end
 
 function _init()
@@ -152,6 +152,7 @@ function _update(dt)
 
     value.rotation += dt * math.random(5) * value.spin
 
+    -- player collisions
     if util.rect_overlap(
           {
             x = State.location.x,
@@ -169,6 +170,16 @@ function _update(dt)
       effect.hitstop(HITSTOP_INTERVAL)
       effect.flash(HITSTOP_INTERVAL, gfx.COLOR_RED)
       State.health -= DAMAGE * value.scale
+      table.insert(destroy_list, idx)
+    end
+
+    -- astroid collisions
+
+    -- astroid off screen
+    if
+        value.location.x < 0 or value.location.x > usagi.GAME_W or
+        value.location.y < 0 or value.location.y > usagi.GAME_H
+    then
       table.insert(destroy_list, idx)
     end
   end
@@ -264,9 +275,11 @@ function _draw(dt)
   -- }}}
   -- }}}
 
-  -- debug stuff
-  -- if usagi.IS_DEV then
-  --   gfx.text(
-  --     State.input_vector.x .. ", " .. State.input_vector.y, 10, 10, gfx.COLOR_GREEN)
-  -- end
+  -- debug stuff {{{
+  if usagi.IS_DEV then
+    gfx.text(
+      State.input_vector.x .. ", " .. State.input_vector.y, 10, 10, gfx.COLOR_GREEN)
+    gfx.text("Astroids: " .. #State.astroids, 10, 20, gfx.COLOR_GREEN)
+  end
+  -- }}}
 end
