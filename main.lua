@@ -20,6 +20,8 @@ function _init()
     stopped = false,
     -- {sprite_idx, location, scale, rotation, speed, direction, spin}
     astroids = {},
+    start_time = os.time(),
+    time = 0,
     debug = false
   }
 end
@@ -73,6 +75,10 @@ local function spr_scaled(idx, x, y, flip_x, flip_y, rotation, tint, alpha, scal
     tint,
     alpha
   )
+end
+
+local function get_timer()
+  return os.time() - State.start_time
 end
 
 -- }}}
@@ -143,6 +149,10 @@ function _update(dt)
     effect.screen_shake(2, 2)
   end
 
+  if not State.stopped then
+    State.time = get_timer()
+  end
+
   local destroy_list = {}
 
   for idx, value in ipairs(State.astroids) do
@@ -176,7 +186,7 @@ function _update(dt)
 
     -- astroid collisions
     for jdx, other in ipairs(State.astroids) do
-      if idx == jdx then goto continue end
+      if idx == jdx then goto continue end -- don't compare value to value
       if util.rect_overlap(
             {
               x = value.location.x,
@@ -191,13 +201,13 @@ function _update(dt)
               h = usagi.SPRITE_SIZE * other.scale,
             })
       then
-        local r2 = util.vec_normalize({
-          x = value.direction.x - other.direction.x,
-          y = value.direction.y - other.direction.y
-        })
         local r1 = util.vec_normalize({
           x = other.direction.x - value.direction.x,
           y = other.direction.y - value.direction.y
+        })
+        local r2 = util.vec_normalize({
+          x = value.direction.x - other.direction.x,
+          y = value.direction.y - other.direction.y
         })
         value.direction = r1
         other.direction = r2
@@ -280,6 +290,10 @@ function _draw(dt)
     gfx.COLOR_WHITE)
   -- }}}
 
+  -- timer {{{
+  local time = State.time .. ""
+  gfx.text(time, (usagi.GAME_W / 2) - (usagi.measure_text(time) / 2), 0, gfx.COLOR_WHITE)
+  -- }}}
 
   -- game over {{{
   if State.health <= 0 then
