@@ -30,6 +30,7 @@ function _init()
     ammo = 5,
     last_bullet = 0,
     time = 0,
+    score = 0,
     last_astroid = 0,
     debug = false,
     shader_on = true,
@@ -74,6 +75,9 @@ DAMAGE = 5
 BULLET_SPEED = 200
 RELOAD_SPEED = 1
 MAX_AMMO = 5
+ASTROID_SCORE = 100
+TIMER_OFFSET = 117
+SCORE_OFFSET = 60
 
 -- }}}
 
@@ -305,6 +309,7 @@ function _update(dt)
             }
           )
       then
+        State.score += ASTROID_SCORE * other.scale
         table.insert(destroy_astroids, jdx)
         table.insert(destroy_bullets, idx)
       end
@@ -329,7 +334,6 @@ function _update(dt)
     table.remove(State.bullets, value)
   end
   -- }}}
-
 
   -- debug controls {{{
   if usagi.IS_DEV then
@@ -429,9 +433,11 @@ function _draw(dt)
 
   -- }}}
 
-  -- timer {{{
+  -- timer and score {{{
   local time = math.ceil(State.time) .. ""
-  gfx.text(time, (usagi.GAME_W / 2) - (usagi.measure_text(time) / 2), 0, gfx.COLOR_WHITE)
+  local score = State.score .. ""
+  gfx.text(time, usagi.GAME_W - TIMER_OFFSET, 0, gfx.COLOR_WHITE)
+  gfx.text(score, usagi.GAME_W - SCORE_OFFSET, 0, gfx.COLOR_WHITE)
   -- }}}
 
   -- game over {{{
@@ -452,26 +458,27 @@ function _draw(dt)
   -- }}}
 
   -- shader uniforms {{{
-  gfx.shader_uniform("u_time", usagi.elapsed)
+  -- the period between each scan line cycle
+  gfx.shader_uniform("u_time", usagi.elapsed / 2)
   gfx.shader_uniform("u_resolution", { usagi.GAME_W, usagi.GAME_H })
   -- varies the intensity of the scanline to emulate CRT scan artifacts
-  gfx.shader_uniform("u_scanline", .1 + math.sin(State.time) / 2)
+  gfx.shader_uniform("u_scanline", .1 + math.sin(usagi.elapsed) / 2)
   -- }}}
 
   -- debug stuff {{{
   if usagi.IS_DEV and State.debug then
     -- input and direction vector
     gfx.text_ex(
-      "I:" .. State.input.x .. ", " .. State.input.y, 0, 10, 1, 0, gfx.COLOR_GREEN, .7)
+      "I:" .. State.input.x .. ", " .. State.input.y, 0, 10, 1, 0, gfx.COLOR_GREEN, .5)
     gfx.text_ex(
-      "D:" .. State.direction.x .. ", " .. State.direction.y, 0, 20, 1, 0, gfx.COLOR_GREEN, .7)
+      "D:" .. State.direction.x .. ", " .. State.direction.y, 0, 20, 1, 0, gfx.COLOR_GREEN, .5)
     gfx.text_ex(
-      "Da:" .. State.sprite_direction, 0, 30, 1, 0, gfx.COLOR_GREEN, .7)
+      "Da:" .. State.sprite_direction, 0, 30, 1, 0, gfx.COLOR_GREEN, .5)
     -- astroid count
-    gfx.text_ex("Astroids: " .. #State.astroids, 0, 40, 1, 0, gfx.COLOR_GREEN, .7)
+    gfx.text_ex("Astroids: " .. #State.astroids, 0, 40, 1, 0, gfx.COLOR_GREEN, .5)
     -- bullet count
-    gfx.text_ex("Bullets: " .. #State.bullets, 0, 50, 1, 0, gfx.COLOR_GREEN, .7)
-    gfx.text_ex("Ammo: " .. State.ammo, 0, 60, 1, 0, gfx.COLOR_GREEN, .7)
+    gfx.text_ex("Bullets: " .. #State.bullets, 0, 50, 1, 0, gfx.COLOR_GREEN, .5)
+    gfx.text_ex("Ammo: " .. State.ammo, 0, 60, 1, 0, gfx.COLOR_GREEN, .5)
 
     -- astroid colliders
     for _, value in ipairs(State.astroids) do
