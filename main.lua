@@ -62,6 +62,10 @@ function _update(dt)
     save_manager.save(State)
   end
 
+  if State.stopped and input.pressed(input.BTN1) then
+    State = save_manager.load()
+  end
+
   if not State.stopped then
     State.time += dt
     if State.time - State.last_astroid > ASTROID_INTERVAL then
@@ -258,9 +262,9 @@ function _draw(dt)
   local time = math.ceil(State.time) .. ""
   local score = State.score .. ""
   local high_score = "HI " .. State.high_score
-  gfx.text(time, usagi.GAME_W - TIMER_OFFSET, 0, gfx.COLOR_WHITE)
-  gfx.text(score, usagi.GAME_W - SCORE_OFFSET, 0, gfx.COLOR_WHITE)
-  gfx.text(high_score, usagi.GAME_W - HIGH_SCORE_OFFSET, 0, gfx.COLOR_WHITE)
+  gfx.text(time, TIMER_OFFSET, usagi.GAME_H - STATUS_LINE_OFFSET, gfx.COLOR_WHITE)
+  gfx.text(score, SCORE_OFFSET, usagi.GAME_H - STATUS_LINE_OFFSET, gfx.COLOR_WHITE)
+  gfx.text(high_score, HIGH_SCORE_OFFSET, usagi.GAME_H - STATUS_LINE_OFFSET, gfx.COLOR_WHITE)
   -- }}}
 
   -- game over {{{
@@ -275,6 +279,13 @@ function _draw(dt)
       gfx.COLOR_RED,
       1
     )
+    local prompt_text = "Press [fire] to try again"
+    gfx.text(
+      prompt_text,
+      (usagi.GAME_W / 2) - (usagi.measure_text(prompt_text) / 2),
+      (usagi.GAME_H / 2) - GAME_OVER_OFFSET + 20,
+      gfx.COLOR_RED
+    )
     if State.score > State.high_score and
         usagi.elapsed % 2 < 1 -- make the text flash
     then
@@ -282,7 +293,7 @@ function _draw(dt)
       gfx.text(
         new_text,
         (usagi.GAME_W / 2) - (usagi.measure_text(new_text) / 2),
-        (usagi.GAME_H / 2) - HIGH_SCORE_OFFSET,
+        (usagi.GAME_H / 2) - NEW_HIGH_SCORE_OFFSET,
         gfx.COLOR_RED
       )
     end
