@@ -1,0 +1,17 @@
+--- @meta
+--- @class State
+--- @field player Player the currently loaded player
+--- @field input Usagi.Vec2 the current input state
+--- @field health integer remaining health
+--- @field astroids Astroid[] array of currently loaded astroid obstacles
+--- @field shockwaves Shockwave[] array of currently loaded shockwaves from astroids being destroyed
+--- @field bullets Bullet[] array of currently loaded bullets
+--- @field stopped boolean whether the current game is running or not, triggered on game over
+--- @field ammo integer remaining ammo
+--- @field last_bullet number timestamp of last bullet fired
+--- @field time number currenlty elapsed seconds since last restart
+--- @field score integer current score, score is accumulated by destroying astroids
+--- @field high_score integer highest score ever
+--- @field last_astroid number timestamp of last astroid spawned
+--- @field debug boolean whether or not game is in debug state (default false)
+--- @field shader_on boolean whether or not current shader is active (default true)

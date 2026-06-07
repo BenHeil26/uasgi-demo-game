@@ -12,27 +12,8 @@ function _config()
 end
 
 function _init()
-  -- Live reload preserves globals across saved edits but resets locals.
-  -- Stash mutable game state in a capitalized global like `State` so it
-  -- survives reloads; F5 calls _init again to reset.
-  --- @class State
-  --- @field player Player
-  --- @field input Usagi.Vec2
-  --- @field health integer
-  --- @field astroids Astroid[]
-  --- @field shockwaves Shockwave[]
-  --- @field bullets Bullet[]
-  --- @field stopped boolean
-  --- @field ammo integer
-  --- @field last_bullet number
-  --- @field time number
-  --- @field score integer
-  --- @field high_score integer
-  --- @field last_astroid number
-  --- @field debug boolean
-  --- @field shader_on boolean
+  --- @type State
   State = save_manager.load()
-
   gfx.shader_set('crt')
 end
 
